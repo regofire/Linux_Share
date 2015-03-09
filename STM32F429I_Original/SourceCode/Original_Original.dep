@@ -1,10 +1,0 @@
-Dependencies for Project 'Original', Target 'Original': (DO NOT MODIFY !)
-F (.\Usr\main.c)(0x54FD18B3)(-c --cpu Cortex-M4.fp -D__MICROLIB -g -O2 --apcs=interwork --split_sections-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\ST\STM32F4xx-DSTM32F429_439xx-o ..\image\output\main.o --omf_browse ..\image\output\main.crf --depend ..\image\output\main.d)
-I (C:\Keil\ARM\Inc\ST\STM32F4xx\stm32f4xx.h)(0x532BF35A)
-I (C:\Keil\ARM\CMSIS\Include\core_cm4.h)(0x532BF7C2)
-I (C:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (C:\Keil\ARM\CMSIS\Include\core_cmInstr.h)(0x532BF7C2)
-I (C:\Keil\ARM\CMSIS\Include\core_cmFunc.h)(0x532BF7C2)
-I (C:\Keil\ARM\CMSIS\Include\core_cm4_simd.h)(0x532BF7C2)
-I (C:\Keil\ARM\Inc\ST\STM32F4xx\system_stm32f4xx.h)(0x532BF35A)
-F (.\Sys\startup_stm32f429_439xx.s)(0x532BF31A)(--cpu Cortex-M4.fp -g --apcs=interwork --pd "__MICROLIB SETA 1" -I.\Lib\STM32F4xx_StdPeriph_Driver\inc -I.\Lib\CMSIS\Include -I.\Lib\MyLib -I..\Original-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\ST\STM32F4xx--pd "USE_STM32F4XX SETA 1" --pd "USE_STDPERIPH_DRIVER SETA 1"--list ..\image\output\startup_stm32f429_439xx.lst --xref -o ..\image\output\startup_stm32f429_439xx.o --depend ..\image\output\startup_stm32f429_439xx.d)
