@@ -344,7 +344,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>3</Optim>
+            <Optim>4</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -360,9 +360,9 @@
             <useXO>0</useXO>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define></Define>
+              <Define>USE_STM32F4XX, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath></IncludePath>
+              <IncludePath>.\Lib;.\Lib\CMSIS;.\Lib\MyLib;.\Lib\STM32F4xx_StdPeriph_Driver\inc;.\Usr;..\SourceCode</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -377,9 +377,9 @@
             <useXO>0</useXO>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_STM32F4XX, USE_STDPERIPH_DRIVER</Define>
+              <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\Lib\STM32F4xx_StdPeriph_Driver\inc;.\Lib\CMSIS\Include;.\Lib\MyLib;..\Original</IncludePath>
+              <IncludePath></IncludePath>
             </VariousControls>
           </Aads>
           <LDads>
