@@ -491,6 +491,7 @@ __asm void xPortPendSVHandler( void )
 
 	bx r14
 	nop
+  nop // Chris, add to remove the warning: A1581W: Added 2 bytes of padding at address.
 }
 /*-----------------------------------------------------------*/
 

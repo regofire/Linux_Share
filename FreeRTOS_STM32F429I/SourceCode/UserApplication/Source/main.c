@@ -55,7 +55,7 @@ int main(void)
        - Set NVIC Group Priority to 4
        - Global MSP (MCU Support Package) initialization
      */
-  HAL_Init();  
+  HAL_Init(); 
   
   /* Configure LED3 and LED4 */
   BSP_LED_Init(LED3);
@@ -63,6 +63,11 @@ int main(void)
   
   /* Configure the system clock to 180 MHz */
   SystemClock_Config();
+
+  /* UART 1 Init */
+  BSP_UART_Init();
+  
+  xprintf("Welcome to the STM32F429I Discovery !!\r\n");  
   
   /* Thread 1 definition */
   osThreadDef(LED3, LED_Thread1, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
@@ -78,7 +83,7 @@ int main(void)
   
   /* Start scheduler */
   osKernelStart();
-
+  
   /* We should never get here as control is now taken by the scheduler */
   for(;;);
 }
@@ -121,6 +126,8 @@ static void LED_Thread1(void const *argument)
       osDelay(400);
     }
     
+    xprintf("Resume Thread 2\r\n");
+    
     /* Resume Thread 2 */
     osThreadResume(LEDThread2Handle);
   }
@@ -150,6 +157,8 @@ static void LED_Thread2(void const *argument)
     
     /* Turn off LED4 */
     BSP_LED_Off(LED4);
+    
+    xprintf("Resume Thread 1\r\n");
     
     /* Resume Thread 1 */
     osThreadResume(LEDThread1Handle);
