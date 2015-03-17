@@ -16,8 +16,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -28,6 +28,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "Golbal_Var.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -39,6 +40,8 @@ osThreadId LEDThread1Handle, LEDThread2Handle;
 static void LED_Thread1(void const *argument);
 static void LED_Thread2(void const *argument);
 static void SystemClock_Config(void);
+static void EXTILine0_Config(void);
+
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -55,35 +58,38 @@ int main(void)
        - Set NVIC Group Priority to 4
        - Global MSP (MCU Support Package) initialization
      */
-  HAL_Init(); 
-  
+  HAL_Init();
+
   /* Configure LED3 and LED4 */
   BSP_LED_Init(LED3);
   BSP_LED_Init(LED4);
-  
+
   /* Configure the system clock to 180 MHz */
   SystemClock_Config();
 
   /* UART 1 Init */
   BSP_UART_Init();
-  
-  xprintf("Welcome to the STM32F429I Discovery !!\r\n");  
-  
+
+  xprintf("Welcome to the STM32F429I Discovery !!\r\n");
+
+  /* PB(PA0) INT Init */
+  EXTILine0_Config();
+
   /* Thread 1 definition */
   osThreadDef(LED3, LED_Thread1, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
-  
+
   /* Thread 2 definition */
   osThreadDef(LED4, LED_Thread2, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
-  
+
   /* Start thread 1 */
   LEDThread1Handle = osThreadCreate (osThread(LED3), NULL);
-  
+
   /* Start thread 2 */
   LEDThread2Handle = osThreadCreate (osThread(LED4), NULL);
-  
+
   /* Start scheduler */
   osKernelStart();
-  
+
   /* We should never get here as control is now taken by the scheduler */
   for(;;);
 }
@@ -97,37 +103,39 @@ static void LED_Thread1(void const *argument)
 {
   uint32_t count = 0;
   (void) argument;
-  
+
   for(;;)
   {
+    PIR_Detect = 0;
     count = osKernelSysTick() + 5000;
-    
+
     /* Toggle LED3 every 200 ms for 5 s */
     while (count >= osKernelSysTick())
     {
       BSP_LED_Toggle(LED3);
-      
+
       osDelay(200);
     }
-    
+
     /* Turn off LED3 */
     BSP_LED_Off(LED3);
-    
+
     /* Suspend Thread 1 */
     osThreadSuspend(NULL);
-    
+
     count = osKernelSysTick() + 5000;
-    
+
     /* Toggle LED3 every 400 ms for 5 s */
     while (count >= osKernelSysTick())
     {
       BSP_LED_Toggle(LED3);
-      
+
       osDelay(400);
     }
-    
+
     xprintf("Resume Thread 2\r\n");
-    
+    xprintf("PIR_Detect = %d\r\n",PIR_Detect);
+
     /* Resume Thread 2 */
     osThreadResume(LEDThread2Handle);
   }
@@ -142,11 +150,12 @@ static void LED_Thread2(void const *argument)
 {
   uint32_t count;
   (void) argument;
-  
+
   for(;;)
   {
+    PIR_Detect = 0;
     count = osKernelSysTick() + 10000;
-    
+
     /* Toggle LED4 every 500 ms for 10 s */
     while (count >= osKernelSysTick())
     {
@@ -154,23 +163,24 @@ static void LED_Thread2(void const *argument)
 
       osDelay(500);
     }
-    
+
     /* Turn off LED4 */
     BSP_LED_Off(LED4);
-    
+
     xprintf("Resume Thread 1\r\n");
-    
+    xprintf("PIR_Detect = %d\r\n",PIR_Detect);
+
     /* Resume Thread 1 */
     osThreadResume(LEDThread1Handle);
-    
+
     /* Suspend Thread 2 */
-    osThreadSuspend(NULL);  
+    osThreadSuspend(NULL);
   }
 }
 
 /**
   * @brief  System Clock Configuration
-  *         The system Clock is configured as follow : 
+  *         The system Clock is configured as follow :
   *            System Clock source            = PLL (HSE)
   *            SYSCLK(Hz)                     = 180000000
   *            HCLK(Hz)                       = 180000000
@@ -192,15 +202,15 @@ static void SystemClock_Config(void)
 {
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_OscInitTypeDef RCC_OscInitStruct;
-  
+
   /* Enable Power Control clock */
   __HAL_RCC_PWR_CLK_ENABLE();
-  
-  /* The voltage scaling allows optimizing the power consumption when the device is 
-     clocked below the maximum system frequency, to update the voltage scaling value 
+
+  /* The voltage scaling allows optimizing the power consumption when the device is
+     clocked below the maximum system frequency, to update the voltage scaling value
      regarding system frequency refer to product datasheet.  */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  
+
   /* Enable HSE Oscillator and activate PLL with HSE as source */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
@@ -211,18 +221,55 @@ static void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
- 
+
   /* Activate the Over-Drive mode */
   HAL_PWREx_EnableOverDrive();
- 
-  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
+
+  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
   clocks dividers */
   RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;  
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;  
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
+}
+
+/**
+  * @brief  Configures EXTI Line0 (connected to PA0 pin) in interrupt mode
+  * @param  None
+  * @retval None
+  */
+static void EXTILine0_Config(void)
+{
+  GPIO_InitTypeDef   GPIO_InitStructure;
+
+  /* Enable GPIOA clock */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /* Configure PA0 pin as input floating */
+  GPIO_InitStructure.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStructure.Pull = GPIO_NOPULL;
+  GPIO_InitStructure.Pin = GPIO_PIN_0;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  /* Enable and set EXTI Line0 Interrupt to the lowest priority */
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+}
+
+/**
+  * @brief EXTI line detection callbacks
+  * @param GPIO_Pin: Specifies the pins connected EXTI line
+  * @retval None
+  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if(GPIO_Pin == KEY_BUTTON_PIN)
+  {
+    xprintf("PIR_INT!\r\n");
+    PIR_Detect = 1;
+  }
 }
 
 #ifdef  USE_FULL_ASSERT
